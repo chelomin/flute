@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flute/model/Products.dart';
 import 'package:flutter/services.dart';
@@ -12,20 +13,70 @@ class Api {
 
   @override
   Future<Products> getProducts(int pageNumber, int pageSize) async {
+//    final url = "${BASE_URL}walmartproducts/$API_KEY/$pageNumber/$pageSize";
+//
+//    var clientHttp = createHttpClient();
+//    var response = await clientHttp.get(url);
+//
+//    final String jsonBody = response.body;
+//    final statusCode = response.statusCode;
+//
+//    if(statusCode < 200 || statusCode >= 300 || jsonBody == null) {
+//      throw new FetchDataException("Error while getting contacts [StatusCode:$statusCode, Error:$response]");
+//    }
+//
+//    print(jsonBody);
+//    var json = _decoder.convert(jsonBody);
+//    var products = Products.fromMap(json);
+//
+//    return products;
+
     final url = "${BASE_URL}walmartproducts/$API_KEY/$pageNumber/$pageSize";
+    final httpClient = new HttpClient();
 
-    var clientHttp = createHttpClient();
-    var response = await clientHttp.get(url);
+    try {
+      // Make the call
+      var request = await httpClient.getUrl(Uri.parse(url));
+      var response = await request.close();
+      if (response.statusCode == HttpStatus.OK) {
+        var json = await response.transform(UTF8.decoder).join();
+        // Decode the json response
+        var data = JSON.decode(json);
+        // Get the result list
+        print(data);
 
-    final String jsonBody = response.body;
-    final statusCode = response.statusCode;
-
-    if(statusCode < 200 || statusCode >= 300 || jsonBody == null) {
-      throw new FetchDataException("Error while getting contacts [StatusCode:$statusCode, Error:$response]");
+        return Products.fromMap(data);
+      } else {
+        print("Failed http call.");
+      }
+    } catch (exception) {
+      print(exception.toString());
     }
-
-    return Products.fromMap(_decoder.convert(jsonBody));
+    return null;
   }
+
+//  getData() async {
+//    var url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=pubattlegrounds&count=20';
+//    var httpClient = new HttpClient();
+//    try {
+//      // Make the call
+//      var request = await httpClient.getUrl(Uri.parse(url));
+//      var response = await request.close();
+//      if (response.statusCode == HttpStatus.OK) {
+//        var json = await response.transform(UTF8.decoder).join();
+//        // Decode the json response
+//        var data = JSON.decode(json);
+//        // Get the result list
+//        List results = data["results"];
+//        // Print the results.
+//        print(results);
+//      } else {
+//        print("Failed http call.");
+//      }
+//    } catch (exception) {
+//      print(exception.toString());
+//    }
+//  }
 }
 
 class FetchDataException implements Exception {
