@@ -15,17 +15,17 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primaryColor: Colors.deepOrange,
       ),
-      home: new RandomWords(),
+      home: new Flute(),
     );
   }
 }
 
-class RandomWords extends StatefulWidget {
+class Flute extends StatefulWidget {
   @override
-  createState() => new RandomWordsState();
+  createState() => new FluteState();
 }
 
-class RandomWordsState extends State<RandomWords> {
+class FluteState extends State<Flute> {
   final _biggerFont = const TextStyle(fontSize: 18.0);
 
   static final Cache _cache = MemCache<Product>();
@@ -45,7 +45,7 @@ class RandomWordsState extends State<RandomWords> {
       appBar: new AppBar(
         title: new Text('Wallaby'),
         actions: <Widget>[
-          new IconButton(icon: new Icon(Icons.list), onPressed: _pushSaved)
+          new IconButton(icon: new Icon(Icons.favorite_border), onPressed: _pushSaved)
         ],
       ),
       body: _buildSuggestions(),
@@ -116,10 +116,10 @@ class RandomWordsState extends State<RandomWords> {
       new MaterialPageRoute(
         builder: (context) {
           final tiles = _saved.map(
-            (pair) {
+            (product) {
               return new ListTile(
                 title: new Text(
-                  "placeholder",
+                  product.productName,
                   style: _biggerFont,
                 ),
               );

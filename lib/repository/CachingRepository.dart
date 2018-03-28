@@ -5,6 +5,7 @@ import 'package:flute/api/Api.dart';
 import 'package:flute/cache/Cache.dart';
 import 'package:flute/model/Product.dart';
 import 'package:flute/model/Products.dart';
+import 'package:flute/logger/logger.dart';
 import 'Repository.dart';
 
 class CachingRepository extends Repository {
@@ -44,7 +45,7 @@ class CachingRepository extends Repository {
     }
     completers[index].add(completer);
 
-    print("*** Created future for ${index}");
+    log("*** Created future for ${index}");
 
     return completer.future;
   }
@@ -64,14 +65,14 @@ class CachingRepository extends Repository {
 
         if (comps != null) {
           for (var completer in comps) {
-            print("*** Completed future for ${index}");
+            log("*** Completed future for ${index}");
             completer.complete(product);
           }
           comps.clear();
         }
       }
     } else {
-      print("CachingRepository.onData(null)!!!");
+      log("CachingRepository.onData(null)!!!");
     }
   }
 
