@@ -45,7 +45,8 @@ class FluteState extends State<Flute> {
       appBar: new AppBar(
         title: new Text('Wallaby'),
         actions: <Widget>[
-          new IconButton(icon: new Icon(Icons.favorite_border), onPressed: _pushSaved)
+          new IconButton(
+              icon: new Icon(Icons.favorite_border), onPressed: _pushSaved)
         ],
       ),
       body: _buildSuggestions(),
@@ -83,29 +84,34 @@ class FluteState extends State<Flute> {
     }
   }
 
-  Widget _buildProductCard(Product product) {
-    final alreadySaved = _saved.contains(product);
+  void showProductDetails() {
+    // TODO Implement
+  }
 
-    return new ListTile(
-      title: new Text(
-        product.productName,
-        style: _biggerFont,
-      ),
-      trailing: new Icon(
-        alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
-      ),
+  Widget _buildProductCard(Product product) {
+    return GestureDetector(
       onTap: () {
-        setState(
-          () {
-            if (alreadySaved) {
-              _saved.remove(product);
-            } else {
-              _saved.add(product);
-            }
-          },
-        );
+        showProductDetails();
       },
+      child: new Row(children: [
+        new Container(
+          height: 64.0,
+          width: 64.0,
+          margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+          child: new Image.network(product.productImage),
+        ),
+        new Flexible(
+          child: new Text(
+            product.productName,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: new TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        new Container(
+            margin: const EdgeInsets.only(left: 8.0),
+            child: new Text(product.price)),
+      ]),
     );
   }
 
