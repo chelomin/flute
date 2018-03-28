@@ -34,6 +34,8 @@ class Api {
     final url = "${BASE_URL}walmartproducts/$API_KEY/$pageNumber/$pageSize";
     final httpClient = new HttpClient();
 
+    print(url);
+
     try {
       // Make the call
       var request = await httpClient.getUrl(Uri.parse(url));

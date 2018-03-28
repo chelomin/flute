@@ -4,7 +4,6 @@ import 'package:flute/cache/MemCache.dart';
 import 'package:flute/model/Product.dart';
 import 'package:flute/repository/CachingRepository.dart';
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
 
 void main() => runApp(new MyApp());
 
@@ -12,9 +11,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Startup Name Generator',
+      title: 'Walmart coding challenge',
       theme: new ThemeData(
-        primaryColor: Colors.white,
+        primaryColor: Colors.deepOrange,
       ),
       home: new RandomWords(),
     );
@@ -27,10 +26,6 @@ class RandomWords extends StatefulWidget {
 }
 
 class RandomWordsState extends State<RandomWords> {
-  final _suggestions = <WordPair>[];
-
-  final _saved = new Set<WordPair>();
-
   final _biggerFont = const TextStyle(fontSize: 18.0);
 
   static final Cache _cache = MemCache<Product>();
@@ -48,7 +43,7 @@ class RandomWordsState extends State<RandomWords> {
 
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('Startup Name Generator'),
+        title: new Text('Wallaby'),
         actions: <Widget>[
           new IconButton(icon: new Icon(Icons.list), onPressed: _pushSaved)
         ],
@@ -64,33 +59,36 @@ class RandomWordsState extends State<RandomWords> {
         if (i.isOdd) return new Divider();
 
         final index = i ~/ 2;
-        if (index >= _suggestions.length) {
-          _suggestions.addAll(generateWordPairs().take(10));
-        }
-//        return _buildRow(_suggestions[index]);
-        _buildProductRow(_repo.getProduct(index));
+        return _buildProductRow(_repo.getProduct(index));
       },
     );
   }
 
   Widget _buildProductRow(Future<Product> productFuture) {
     if (productFuture == null) {
-      return Text("loading");
+      return new Text("loading");
     } else {
-      return FutureBuilder<Product>(
+//      print("FutureBuilder created");
+      return new FutureBuilder<Product>(
         future: productFuture,
         builder: (BuildContext context, AsyncSnapshot<Product> snapshot) {
-          return new Text(snapshot.data.productName);
+//          print("FutureBuilder hit");
+          if (snapshot.hasData) {
+            return _buildProductCard(snapshot.data);
+          } else {
+            return new LinearProgressIndicator();
+          }
         },
       );
     }
   }
 
-  Widget _buildRow(WordPair pair) {
-    final alreadySaved = _saved.contains(pair);
+  Widget _buildProductCard(Product product) {
+    final alreadySaved = _saved.contains(product);
+
     return new ListTile(
       title: new Text(
-        pair.asPascalCase,
+        product.productName,
         style: _biggerFont,
       ),
       trailing: new Icon(
@@ -101,15 +99,17 @@ class RandomWordsState extends State<RandomWords> {
         setState(
           () {
             if (alreadySaved) {
-              _saved.remove(pair);
+              _saved.remove(product);
             } else {
-              _saved.add(pair);
+              _saved.add(product);
             }
           },
         );
       },
     );
   }
+
+  var _saved = new Set<Product>();
 
   void _pushSaved() {
     Navigator.of(context).push(
@@ -119,7 +119,7 @@ class RandomWordsState extends State<RandomWords> {
             (pair) {
               return new ListTile(
                 title: new Text(
-                  pair.asPascalCase,
+                  "placeholder",
                   style: _biggerFont,
                 ),
               );

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flute/api/Api.dart';
 import 'package:flute/cache/Cache.dart';
@@ -13,6 +14,7 @@ class CachingRepository extends Repository {
 
   final pagesInProgress = Set<int>();
   final pagesCompleted = Set<int>();
+  final completers = HashMap<int, Set<Completer>>();
 
   int totalProducts;
 
@@ -25,16 +27,26 @@ class CachingRepository extends Repository {
     if (pagesCompleted.contains(pageIndex)) {
       return cache.get(index);
     } else {
-      if (pagesInProgress.contains(pageIndex)) {
-        // TODO Check if we can return meaningful Future
-        return null;
-      } else {
+      if (!pagesInProgress.contains(pageIndex)) {
         pagesInProgress.add(pageIndex);
         var future = api.getProducts(pageIndex, pageSize);
         future.asStream().listen(onData);
-        return null;
       }
+      return buildFuture(index);
     }
+  }
+
+  Future<Product> buildFuture(int index) {
+    var completer = Completer<Product>();
+
+    if (completers[index] == null) {
+      completers[index] = Set<Completer>();
+    }
+    completers[index].add(completer);
+
+    print("*** Created future for ${index}");
+
+    return completer.future;
   }
 
   void onData(Products products) {
@@ -44,8 +56,19 @@ class CachingRepository extends Repository {
       pagesCompleted.add(products.pageNumber);
 
       for (int i = 0; i < pageSize; i++) {
-        cache.put(
-            products.pageSize * products.pageNumber + i, products.products[i]);
+        int index = products.pageSize * products.pageNumber + i;
+        Product product = products.products[i];
+
+        cache.put(index, product);
+        Set<Completer> comps = completers[index];
+
+        if (comps != null) {
+          for (var completer in comps) {
+            print("*** Completed future for ${index}");
+            completer.complete(product);
+          }
+          comps.clear();
+        }
       }
     } else {
       print("CachingRepository.onData(null)!!!");
@@ -55,5 +78,4 @@ class CachingRepository extends Repository {
   int pageIndexFromProductIndex(int productIndex) {
     return productIndex ~/ pageSize;
   }
-
 }
