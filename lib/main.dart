@@ -4,6 +4,13 @@ import 'package:flute/cache/MemCache.dart';
 import 'package:flute/model/Product.dart';
 import 'package:flute/repository/CachingRepository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+
+final ThemeData _kTheme = new ThemeData(
+  brightness: Brightness.light,
+  primarySwatch: Colors.teal,
+  accentColor: Colors.redAccent,
+);
 
 void main() => runApp(new MyApp());
 
@@ -84,14 +91,93 @@ class FluteState extends State<Flute> {
     }
   }
 
-  void showProductDetails() {
-    // TODO Implement
+  void showProductDetails(BuildContext context, Product product) {
+    Navigator.push(
+        context,
+        new MaterialPageRoute<void>(
+          settings: const RouteSettings(name: '/flute/product'),
+          builder: (BuildContext context) {
+            return new Theme(
+              data: _kTheme.copyWith(platform: Theme.of(context).platform),
+              child: _buildProductDetailsPage2(product),
+            );
+          },
+        ));
+  }
+
+  Widget _buildProductDetailsPage(Product product) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text('Saved Suggestions'),
+      ),
+      body: new Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        child: Column(children: <Widget>[
+          new Image.network(product.productImage),
+          new Flexible(
+            child: new Text(
+              product.productName,
+              maxLines: 3,
+              style: new TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                  fontSize: 24.0),
+            ),
+          ),
+          new Flexible(
+            fit: FlexFit.tight,
+            child: new Text(
+              product.longDescription,
+              style: new TextStyle(color: Colors.black87, fontSize: 14.0),
+              maxLines: 1000,
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildProductDetailsPage2(Product product) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text(product.productName),
+      ),
+      body: new Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              new Image.network(product.productImage),
+              new Flexible(
+                child: new Text(
+                  product.price,
+                  textAlign: TextAlign.right,
+                  maxLines: 3,
+                  style: new TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple,
+                      fontSize: 24.0),
+                ),
+              ),
+              new Expanded(
+//                fit: FlexFit.tight,
+                child: new SingleChildScrollView(
+                  child: new Text(
+                    product.longDescription,
+                    style: new TextStyle(color: Colors.black87, fontSize: 14.0),
+                    maxLines: 1000,
+                  ),
+                ),
+              ),
+            ]),
+      ),
+    );
   }
 
   Widget _buildProductCard(Product product) {
     return GestureDetector(
       onTap: () {
-        showProductDetails();
+        showProductDetails(context, product);
       },
       child: new Row(children: [
         new Container(
@@ -100,17 +186,26 @@ class FluteState extends State<Flute> {
           margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
           child: new Image.network(product.productImage),
         ),
-        new Flexible(
-          child: new Text(
-            product.productName,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: new TextStyle(fontWeight: FontWeight.bold),
-          ),
+        new Expanded(
+          child:
+              new Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            new Flexible(
+              child: new Text(
+                product.productName,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: new TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ]),
         ),
         new Container(
-            margin: const EdgeInsets.only(left: 8.0),
-            child: new Text(product.price)),
+          margin: const EdgeInsets.only(left: 8.0),
+          child: new Text(
+            product.price,
+            textAlign: TextAlign.end,
+          ),
+        ),
       ]),
     );
   }
