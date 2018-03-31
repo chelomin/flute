@@ -1,10 +1,10 @@
 import 'dart:async';
+
 import 'package:flute/cache/Cache.dart';
 import 'package:flute/cache/MemCache.dart';
 import 'package:flute/model/Product.dart';
 import 'package:flute/repository/CachingRepository.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 
 final ThemeData _kTheme = new ThemeData(
   brightness: Brightness.light,
@@ -12,24 +12,24 @@ final ThemeData _kTheme = new ThemeData(
   accentColor: Colors.redAccent,
 );
 
-void main() => runApp(new MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'Walmart coding challenge',
-      theme: new ThemeData(
+      theme: ThemeData(
         primaryColor: Colors.deepOrange,
       ),
-      home: new Flute(),
+      home: Flute(),
     );
   }
 }
 
 class Flute extends StatefulWidget {
   @override
-  createState() => new FluteState();
+  createState() => FluteState();
 }
 
 class FluteState extends State<Flute> {
@@ -48,12 +48,12 @@ class FluteState extends State<Flute> {
     // Need to pull something to know at least how many products do we have
     _repo.getProduct(0).asStream().listen(onProduct);
 
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('Wallaby'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Wallaby'),
         actions: <Widget>[
           new IconButton(
-              icon: new Icon(Icons.favorite_border), onPressed: _pushSaved)
+              icon: Icon(Icons.favorite_border), onPressed: _pushSaved)
         ],
       ),
       body: _buildSuggestions(),
@@ -61,10 +61,10 @@ class FluteState extends State<Flute> {
   }
 
   Widget _buildSuggestions() {
-    return new ListView.builder(
+    return ListView.builder(
       padding: const EdgeInsets.all(16.0),
       itemBuilder: (context, i) {
-        if (i.isOdd) return new Divider();
+        if (i.isOdd) return Divider();
 
         final index = i ~/ 2;
         return _buildProductRow(_repo.getProduct(index));
@@ -74,17 +74,15 @@ class FluteState extends State<Flute> {
 
   Widget _buildProductRow(Future<Product> productFuture) {
     if (productFuture == null) {
-      return new Text("loading");
+      return Text("error loading item");
     } else {
-//      print("FutureBuilder created");
       return new FutureBuilder<Product>(
         future: productFuture,
         builder: (BuildContext context, AsyncSnapshot<Product> snapshot) {
-//          print("FutureBuilder hit");
           if (snapshot.hasData) {
             return _buildProductCard(snapshot.data);
           } else {
-            return new LinearProgressIndicator();
+            return Text("");
           }
         },
       );
@@ -94,78 +92,47 @@ class FluteState extends State<Flute> {
   void showProductDetails(BuildContext context, Product product) {
     Navigator.push(
         context,
-        new MaterialPageRoute<void>(
+        MaterialPageRoute<void>(
           settings: const RouteSettings(name: '/flute/product'),
           builder: (BuildContext context) {
-            return new Theme(
+            return Theme(
               data: _kTheme.copyWith(platform: Theme.of(context).platform),
-              child: _buildProductDetailsPage2(product),
+              child: _buildProductDetailsPage(product),
             );
           },
         ));
   }
 
   Widget _buildProductDetailsPage(Product product) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('Saved Suggestions'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(product.productName),
       ),
-      body: new Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-        child: Column(children: <Widget>[
-          new Image.network(product.productImage),
-          new Flexible(
-            child: new Text(
-              product.productName,
-              maxLines: 3,
-              style: new TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
-                  fontSize: 24.0),
-            ),
-          ),
-          new Flexible(
-            fit: FlexFit.tight,
-            child: new Text(
-              product.longDescription,
-              style: new TextStyle(color: Colors.black87, fontSize: 14.0),
-              maxLines: 1000,
-            ),
-          ),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildProductDetailsPage2(Product product) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(product.productName),
-      ),
-      body: new Container(
+      body: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
-              new Image.network(product.productImage),
-              new Flexible(
-                child: new Text(
+              Image.network(product.productImage),
+              Flexible(
+                child: Text(
                   product.price,
                   textAlign: TextAlign.right,
                   maxLines: 3,
-                  style: new TextStyle(
+                  style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.deepPurple,
                       fontSize: 24.0),
                 ),
               ),
-              new Expanded(
-//                fit: FlexFit.tight,
-                child: new SingleChildScrollView(
-                  child: new Text(
-                    product.longDescription,
-                    style: new TextStyle(color: Colors.black87, fontSize: 14.0),
-                    maxLines: 1000,
+              Expanded(
+                flex: 10,
+                child: SingleChildScrollView(
+                  child: RichText(
+                    text: TextSpan(
+                      text: product.longDescription,
+                      style: TextStyle(color: Colors.black87, fontSize: 14.0),
+                    ),
                   ),
                 ),
               ),
@@ -179,29 +146,28 @@ class FluteState extends State<Flute> {
       onTap: () {
         showProductDetails(context, product);
       },
-      child: new Row(children: [
-        new Container(
+      child: Row(children: [
+        Container(
           height: 64.0,
           width: 64.0,
           margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-          child: new Image.network(product.productImage),
+          child: Image.network(product.productImage),
         ),
-        new Expanded(
-          child:
-              new Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            new Flexible(
-              child: new Text(
+        Expanded(
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Flexible(
+              child: Text(
                 product.productName,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: new TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ]),
         ),
         new Container(
           margin: const EdgeInsets.only(left: 8.0),
-          child: new Text(
+          child: Text(
             product.price,
             textAlign: TextAlign.end,
           ),
@@ -210,16 +176,16 @@ class FluteState extends State<Flute> {
     );
   }
 
-  var _saved = new Set<Product>();
+  var _saved = Set<Product>();
 
   void _pushSaved() {
     Navigator.of(context).push(
-      new MaterialPageRoute(
+      MaterialPageRoute(
         builder: (context) {
           final tiles = _saved.map(
             (product) {
-              return new ListTile(
-                title: new Text(
+              return ListTile(
+                title: Text(
                   product.productName,
                   style: _biggerFont,
                 ),
@@ -233,11 +199,11 @@ class FluteState extends State<Flute> {
               )
               .toList();
 
-          return new Scaffold(
-            appBar: new AppBar(
-              title: new Text('Saved Suggestions'),
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('Saved Suggestions'),
             ),
-            body: new ListView(children: divided),
+            body: ListView(children: divided),
           );
         },
       ),
